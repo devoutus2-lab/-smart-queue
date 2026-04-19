@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: smart-queue
+    runtime: node
+    plan: starter
+    buildCommand: corepack enable && corepack pnpm install --frozen-lockfile && corepack pnpm build
+    startCommand: corepack pnpm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: TRUST_PROXY
+        value: "1"
+      - key: QTECH_DATA_DIR
+        value: /var/data/qtech
+      - key: QTECH_ENABLE_DEMO_SEEDING
+        value: "false"
+      - key: SESSION_COOKIE_SECURE
+        value: auto
+      - key: SESSION_COOKIE_SAME_SITE
+        value: lax
+      - key: APP_URL
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_SIGNUP_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
+    disk:
+      name: smart-queue-data
+      mountPath: /var/data
+      sizeGB: 5
