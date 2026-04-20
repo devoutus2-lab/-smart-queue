@@ -168,7 +168,7 @@ initializeDatabase();
 const SESSION_COOKIE = "qless_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 14;
 const PASSWORD_RESET_TTL_MS = 1000 * 60 * 30;
-const ADMIN_SIGNUP_SECRET = process.env.ADMIN_SIGNUP_SECRET ?? "smartqueue-admin-2026";
+const ADMIN_SIGNUP_SECRET = process.env.ADMIN_SIGNUP_SECRET?.trim() || "";
 const APP_URL = runtimeConfig.appUrl;
 const COOKIE_DOMAIN = process.env.SESSION_COOKIE_DOMAIN?.trim() || "";
 const COOKIE_SAME_SITE = (process.env.SESSION_COOKIE_SAME_SITE?.trim().toLowerCase() ?? "lax") as "lax" | "strict" | "none";
@@ -177,6 +177,7 @@ const CORS_ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);
+const APP_ORIGIN = APP_URL ? new URL(APP_URL).origin : "";
 
 declare global {
   namespace Express {
@@ -288,8 +289,9 @@ function createPasswordResetLink(token: string) {
 
 function isAllowedCorsOrigin(origin?: string) {
   if (!origin) return true;
-  if (!CORS_ALLOWED_ORIGINS.length) return true;
-  return CORS_ALLOWED_ORIGINS.includes(origin);
+  if (CORS_ALLOWED_ORIGINS.length) return CORS_ALLOWED_ORIGINS.includes(origin);
+  if (APP_ORIGIN) return origin === APP_ORIGIN;
+  return !runtimeConfig.isProduction;
 }
 
 const DEFAULT_PLATFORM_SETTINGS: AdminPlatformSettings = {
@@ -3005,6 +3007,7 @@ let schedulerStarted = false;
 
 export function createServer() {
   const app = express();
+  app.disable("x-powered-by");
   app.set("trust proxy", runtimeConfig.trustProxy);
   app.use(
     cors({
@@ -3018,6 +3021,12 @@ export function createServer() {
       credentials: true,
     }),
   );
+  app.use((_req, res, next) => {
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    next();
+  });
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -3189,6 +3198,9 @@ export function createServer() {
   app.post("/api/auth/register-admin", (req, res) => {
     const parsed = validate(res, adminRegisterInputSchema, req.body);
     if (!parsed) return;
+    if (runtimeConfig.isProduction && !ADMIN_SIGNUP_SECRET) {
+      return fail(res, 403, "Admin self-registration is disabled", "ADMIN_SIGNUP_DISABLED");
+    }
     if (parsed.adminSecret !== ADMIN_SIGNUP_SECRET) {
       return fail(res, 403, "Admin access code is invalid", "INVALID_ADMIN_SECRET");
     }

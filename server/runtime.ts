@@ -77,6 +77,10 @@ export function validateRuntimeConfig(config: RuntimeConfig) {
     warnings.push("APP_URL is not set. Absolute links and secure-cookie detection will rely on proxy headers.");
   }
 
+  if (config.isProduction && !(process.env.ADMIN_SIGNUP_SECRET?.trim())) {
+    warnings.push("ADMIN_SIGNUP_SECRET is not set. Admin self-registration will be disabled in production.");
+  }
+
   if (config.isProduction && config.demoSeedingEnabled) {
     warnings.push("QTECH_ENABLE_DEMO_SEEDING is enabled in production. Demo data may be inserted into hosted environments.");
   }
