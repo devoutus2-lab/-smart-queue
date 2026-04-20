@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, BriefcaseBusiness, Building2, CheckCircle2, Sear
 import { Link, useNavigate } from "react-router-dom";
 import type { BusinessCategory, OwnerSignupBusinessSearchItem, SubscriptionInterval, SubscriptionPlan } from "@shared/api";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
+import HostedStorageNotice from "@/components/HostedStorageNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -212,6 +213,7 @@ export default function RegisterBusiness() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+              <HostedStorageNotice />
               {step === 1 ? (
                 <div className="space-y-5">
                   <div>

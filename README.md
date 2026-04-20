@@ -60,6 +60,7 @@ This repo no longer keeps machine-specific secrets in version control.
 - `SESSION_COOKIE_DOMAIN`: optional cookie domain for hosted deployments
 - `CORS_ALLOWED_ORIGINS`: optional comma-separated allowlist when frontend and backend are not same-origin
 - `DATABASE_URL`: planned Postgres connection string for the shared-cloud migration; the current checked-in runtime still uses SQLite until that adapter work is completed
+- `DATABASE_AUTH_TOKEN`: optional managed database auth token; required for libsql/Turso-style URLs when that adapter is enabled
 - `ADMIN_SIGNUP_SECRET`: optional admin self-registration secret
 - `GROQ_API_KEY`: optional live assistant integration
 - `GROQ_MODEL`: optional Groq model override
@@ -159,6 +160,7 @@ The fastest live setup for multi-device access is to host the existing Express +
 - Recommended host: Render or Railway
 - Recommended runtime shape: one public URL serving both the SPA and `/api/*`
 - Recommended storage for the current codebase: persistent disk-backed SQLite using `QTECH_DATA_DIR`
+- Free-tier warning: if you point `QTECH_DATA_DIR` to `/tmp` or another ephemeral path, newly created accounts and app data can disappear after restart/redeploy
 - Important: set `QTECH_ENABLE_DEMO_SEEDING=false` in production
 - Keep the existing PWA manifest and service worker so the hosted site remains installable on supported browsers
 
@@ -171,7 +173,7 @@ The fastest live setup for multi-device access is to host the existing Express +
 5. Keep the start command as `node dist/server/node-build.mjs`.
 6. Do not use `corepack enable` in the Render build command. That step can fail on Render's read-only filesystem before your app build even starts.
 7. If `NODE_ENV=production` is set on the service, keep `--include=dev` in the build command so build tools like `vite` are still installed during deploys.
-8. Set secrets such as `APP_URL` and `ADMIN_SIGNUP_SECRET`. Leave `GROQ_API_KEY`, `GOOGLE_PLACES_API_KEY`, and `DATABASE_URL` unset unless you need those integrations immediately.
+8. Set secrets such as `APP_URL` and `ADMIN_SIGNUP_SECRET`. Leave `GROQ_API_KEY`, `GOOGLE_PLACES_API_KEY`, `DATABASE_URL`, and `DATABASE_AUTH_TOKEN` unset unless you are deploying a build that explicitly supports a managed cloud database adapter.
 9. Keep the persistent disk mounted so app data survives restarts.
 
 The included Render config uses:
@@ -204,7 +206,7 @@ Mount a persistent volume to `/data` or override `QTECH_DATA_DIR` to avoid losin
 
 The current production-fast path keeps SQLite on a persistent server disk so multiple internet-connected devices can use the same hosted app immediately.
 
-A true move to Postgres is still the recommended next step for higher concurrency, managed backups, and host-managed database operations. This repo now exposes `DATABASE_URL` in deployment config and health metadata, but the runtime adapter migration itself is not completed in the checked-in server yet, so production still runs on SQLite today.
+A true move to a managed cloud database is still the recommended next step for higher concurrency, managed backups, and free-tier durability without relying on host disks. This repo now exposes `DATABASE_URL` and `DATABASE_AUTH_TOKEN` in deployment config and health metadata, but the runtime adapter migration itself is not completed in the checked-in server yet, so production still runs on SQLite today. If `DATABASE_URL` is set in production on this build, startup now fails loudly instead of silently pretending durable storage is active.
 
 ### Runnable handoff startup
 

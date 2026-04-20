@@ -377,6 +377,15 @@ function isAllowedCorsOrigin(origin?: string) {
   return !runtimeConfig.isProduction;
 }
 
+function getDeployHealth() {
+  return {
+    ...getDatabaseHealthSnapshot(),
+    appUrl: runtimeConfig.appUrl || null,
+    trustProxy: runtimeConfig.trustProxy,
+    nodeEnv: runtimeConfig.nodeEnv,
+  };
+}
+
 const DEFAULT_PLATFORM_SETTINGS: AdminPlatformSettings = {
   assistantSupportEscalationEnabled: true,
   supportAutoAssignEnabled: true,
@@ -810,6 +819,7 @@ function getAdminCommandCenter(): AdminCommandCenter {
 
   return {
     operationsSummary,
+    deployHealth: getDeployHealth(),
     unresolvedSupportCount,
     pendingClaimsCount,
     suspendedBusinessesCount,
@@ -3107,12 +3117,7 @@ export function createServer() {
         status: "ok",
         database: "ok",
         serverTime: new Date().toISOString(),
-        runtime: {
-          ...getDatabaseHealthSnapshot(),
-          appUrl: runtimeConfig.appUrl || null,
-          trustProxy: runtimeConfig.trustProxy,
-          nodeEnv: runtimeConfig.nodeEnv,
-        },
+        runtime: getDeployHealth(),
       });
     } catch (error) {
       console.error("Health check failed:", error);
@@ -3120,12 +3125,7 @@ export function createServer() {
         status: "degraded",
         database: "error",
         serverTime: new Date().toISOString(),
-        runtime: {
-          ...getDatabaseHealthSnapshot(),
-          appUrl: runtimeConfig.appUrl || null,
-          trustProxy: runtimeConfig.trustProxy,
-          nodeEnv: runtimeConfig.nodeEnv,
-        },
+        runtime: getDeployHealth(),
       });
     }
   });

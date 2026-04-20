@@ -28,6 +28,8 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_AUTH_TOKEN
+        sync: false
       - key: ADMIN_SIGNUP_SECRET
         sync: false
       - key: GROQ_API_KEY

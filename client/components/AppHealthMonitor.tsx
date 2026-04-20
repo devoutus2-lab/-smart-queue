@@ -1,22 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import type { HealthResponse } from "@shared/api";
 import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 
-type HealthPayload = {
-  status: "ok" | "degraded";
-  database: "ok" | "error";
-  serverTime: string;
-  runtime?: {
-    provider: string;
-    location: string;
-    cloudDatabaseConfigured: boolean;
-    demoSeedingEnabled: boolean;
-    appUrl: string | null;
-    trustProxy: boolean | number;
-    nodeEnv: string;
-  };
-};
-
-async function fetchHealth(): Promise<HealthPayload> {
+async function fetchHealth(): Promise<HealthResponse> {
   const response = await fetch("/api/health", {
     credentials: "include",
     cache: "no-store",

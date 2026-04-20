@@ -9,12 +9,21 @@ export type RuntimeConfig = {
   appUrl: string;
   dataDir: string;
   databaseUrl: string;
+  databaseAuthToken: string;
   demoSeedingEnabled: boolean;
   trustProxy: boolean | number;
   cookieDomain: string;
   cookieSameSite: CookieSameSite;
   cookieSecureMode: CookieSecureMode;
   corsAllowedOrigins: string[];
+};
+
+export type PersistenceStatus = {
+  mode: "sqlite-local" | "sqlite-ephemeral" | "cloud-configured-unavailable";
+  provider: "sqlite";
+  durable: boolean;
+  ephemeral: boolean;
+  storageWarning: string | null;
 };
 
 function trimTrailingSlashes(value: string) {
@@ -57,6 +66,7 @@ export function createRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runti
     appUrl: trimTrailingSlashes(env.APP_URL || ""),
     dataDir: env.QTECH_DATA_DIR?.trim() || ".data",
     databaseUrl: env.DATABASE_URL?.trim() || "",
+    databaseAuthToken: env.DATABASE_AUTH_TOKEN?.trim() || "",
     demoSeedingEnabled: parseBoolean(env.QTECH_ENABLE_DEMO_SEEDING, demoSeedingFallback === "true"),
     trustProxy: parseTrustProxy(env.TRUST_PROXY),
     cookieDomain: env.SESSION_COOKIE_DOMAIN?.trim() || "",
@@ -69,9 +79,46 @@ export function createRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runti
   };
 }
 
+function normalizePath(value: string) {
+  return value.replace(/\\/g, "/").toLowerCase();
+}
+
+function isEphemeralSqlitePath(config: RuntimeConfig) {
+  const normalized = normalizePath(config.dataDir);
+  return normalized === "/tmp" || normalized.startsWith("/tmp/") || normalized.includes("/render/project/src/.data");
+}
+
+function databaseUrlNeedsAuthToken(databaseUrl: string) {
+  return databaseUrl.startsWith("libsql://") || databaseUrl.startsWith("https://");
+}
+
+export function getPersistenceStatus(config: RuntimeConfig): PersistenceStatus {
+  if (config.databaseUrl) {
+    return {
+      mode: "cloud-configured-unavailable",
+      provider: "sqlite",
+      durable: false,
+      ephemeral: false,
+      storageWarning: "DATABASE_URL is configured, but this build still runs on the SQLite adapter. Durable cloud persistence is not active yet.",
+    };
+  }
+
+  const ephemeral = config.isProduction && isEphemeralSqlitePath(config);
+  return {
+    mode: ephemeral ? "sqlite-ephemeral" : "sqlite-local",
+    provider: "sqlite",
+    durable: !ephemeral,
+    ephemeral,
+    storageWarning: ephemeral
+      ? "Production data is stored on an ephemeral filesystem. New accounts, sessions, and queue data can disappear after a restart, redeploy, or free-tier recycle."
+      : null,
+  };
+}
+
 export function validateRuntimeConfig(config: RuntimeConfig) {
   const warnings: string[] = [];
   const errors: string[] = [];
+  const persistence = getPersistenceStatus(config);
 
   if (config.isProduction && !config.appUrl) {
     warnings.push("APP_URL is not set. Absolute links and secure-cookie detection will rely on proxy headers.");
@@ -83,6 +130,14 @@ export function validateRuntimeConfig(config: RuntimeConfig) {
 
   if (config.isProduction && config.demoSeedingEnabled) {
     warnings.push("QTECH_ENABLE_DEMO_SEEDING is enabled in production. Demo data may be inserted into hosted environments.");
+  }
+
+  if (config.isProduction && persistence.storageWarning) {
+    warnings.push(persistence.storageWarning);
+  }
+
+  if (config.isProduction && config.databaseUrl && databaseUrlNeedsAuthToken(config.databaseUrl) && !config.databaseAuthToken) {
+    errors.push("DATABASE_AUTH_TOKEN is required for the configured managed database URL.");
   }
 
   if (config.cookieSameSite === "none" && config.cookieSecureMode === "false") {
@@ -97,6 +152,7 @@ export function validateRuntimeConfig(config: RuntimeConfig) {
 }
 
 export function getRuntimeSummary(config: RuntimeConfig = runtimeConfig) {
+  const persistence = getPersistenceStatus(config);
   return {
     nodeEnv: config.nodeEnv,
     host: config.host,
@@ -105,6 +161,7 @@ export function getRuntimeSummary(config: RuntimeConfig = runtimeConfig) {
     trustProxy: config.trustProxy,
     demoSeedingEnabled: config.demoSeedingEnabled,
     databaseUrlConfigured: Boolean(config.databaseUrl),
+    persistence,
     sameOriginDeployment: config.corsAllowedOrigins.length === 0,
   };
 }

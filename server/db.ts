@@ -34,13 +34,14 @@ import {
   visitReceipts,
 } from "./schema";
 import { insertAndReturnId } from "./db-write";
-import { runtimeConfig } from "./runtime";
+import { getPersistenceStatus, runtimeConfig } from "./runtime";
 
 const dataDir = path.resolve(process.cwd(), runtimeConfig.dataDir);
 const dbFile = path.join(dataDir, "qless.sqlite");
 const isProduction = runtimeConfig.isProduction;
 const enableDemoSeeding = runtimeConfig.demoSeedingEnabled;
 const databaseUrlConfigured = Boolean(runtimeConfig.databaseUrl);
+const persistenceStatus = getPersistenceStatus(runtimeConfig);
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -56,6 +57,15 @@ export const db = drizzle(sqlite);
 export const databaseProvider = "sqlite" as const;
 export const databaseLocation = dbFile;
 export const isCloudDatabaseConfigured = databaseUrlConfigured;
+export const databasePersistenceMode = persistenceStatus.mode;
+export const databasePersistenceDurable = persistenceStatus.durable;
+export const databaseStorageWarning = persistenceStatus.storageWarning;
+
+if (isProduction && databaseUrlConfigured) {
+  throw new Error(
+    "[db] DATABASE_URL is configured, but this build does not include the managed cloud database adapter yet. Remove DATABASE_URL or deploy a build with cloud adapter support.",
+  );
+}
 
 function logDatabaseBootstrap() {
   const modeLabel = isProduction ? "production" : "development";
@@ -64,8 +74,13 @@ function logDatabaseBootstrap() {
   console.log(`[db] Active database provider: ${databaseProvider}`);
   console.log(`[db] SQLite file: ${dbFile}`);
   console.log(`[db] Demo seeding: ${seedingLabel}`);
+  console.log(`[db] Persistence mode: ${databasePersistenceMode}`);
+  console.log(`[db] Durable storage: ${databasePersistenceDurable ? "yes" : "no"}`);
   if (databaseUrlConfigured) {
     console.warn("[db] DATABASE_URL is configured, but this release still runs on the SQLite adapter. Postgres migration is not wired yet.");
+  }
+  if (databaseStorageWarning) {
+    console.warn(`[db] ${databaseStorageWarning}`);
   }
   if (isProduction && !process.env.QTECH_DATA_DIR) {
     console.warn("[db] QTECH_DATA_DIR is not set in production. Use a persistent disk path on your host.");
@@ -81,6 +96,9 @@ export function getDatabaseHealthSnapshot() {
     provider: databaseProvider,
     location: databaseLocation,
     cloudDatabaseConfigured: isCloudDatabaseConfigured,
+    persistenceMode: databasePersistenceMode,
+    persistenceDurable: databasePersistenceDurable,
+    storageWarning: databaseStorageWarning,
     demoSeedingEnabled: enableDemoSeeding,
   };
 }

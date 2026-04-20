@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowRight, Check, Clock3, LogIn, MessageSquareMore, Settings2, Sparkles } from "lucide-react";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
+import HostedStorageNotice from "@/components/HostedStorageNotice";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -198,6 +199,8 @@ export default function Login() {
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
+
+                <HostedStorageNotice className="mt-5" />
 
                 <div className="mt-5 rounded-[1.4rem] border border-blue-100 bg-blue-50/70 p-5 text-sm leading-6 text-slate-600 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
                   <div className="font-semibold text-slate-900 dark:text-slate-100">Demo access</div>

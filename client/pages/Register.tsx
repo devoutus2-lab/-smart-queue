@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowRight, BriefcaseBusiness, Check, ShieldCheck, UserRoundPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
+import HostedStorageNotice from "@/components/HostedStorageNotice";
 import { cn } from "@/lib/utils";
 
 const accountChoices = [
@@ -115,6 +116,8 @@ export default function Register() {
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
+
+                <HostedStorageNotice className="mt-5" />
               </section>
             </div>
           </div>

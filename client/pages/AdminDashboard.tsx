@@ -567,6 +567,27 @@ export default function AdminDashboard() {
               <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{commandCenter?.operationsSummary.title ?? "Admin operations"}</div>
               <div className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">{commandCenter?.operationsSummary.message}</div>
             </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <div className="info-card">
+                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Database mode</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{commandCenter?.deployHealth.provider ?? "sqlite"}</div>
+                <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{commandCenter?.deployHealth.persistenceMode ?? "unknown"}</div>
+              </div>
+              <div className="info-card">
+                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Storage durability</div>
+                <div className="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {commandCenter?.deployHealth.persistenceDurable ? "Durable" : "Temporary"}
+                </div>
+                <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{commandCenter?.deployHealth.location ?? "Unavailable"}</div>
+              </div>
+              <div className="info-card">
+                <div className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">Hosted app URL</div>
+                <div className="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100 break-all">
+                  {commandCenter?.deployHealth.appUrl ?? "Missing APP_URL"}
+                </div>
+                <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Trust proxy: {String(commandCenter?.deployHealth.trustProxy ?? "unknown")}</div>
+              </div>
+            </div>
           </div>
 
           <div className="kpi-grid">
@@ -600,12 +621,18 @@ export default function AdminDashboard() {
             <div className="section-shell panel-roomy">
               <h2 className="section-heading text-slate-900 dark:text-slate-100">Operational warnings</h2>
               <div className="mt-5 space-y-3">
+                {commandCenter?.deployHealth.storageWarning ? <InlineWarning>{commandCenter.deployHealth.storageWarning}</InlineWarning> : null}
                 {(commandCenter?.supportQueue.staleCount ?? 0) > 0 ? <InlineWarning>{commandCenter?.supportQueue.staleCount} support conversation(s) have been unresolved for more than two days.</InlineWarning> : null}
                 {(commandCenter?.claimsQueue.stalePendingCount ?? 0) > 0 ? <InlineWarning>{commandCenter?.claimsQueue.stalePendingCount} claim request(s) have been pending for more than three days.</InlineWarning> : null}
                 {(commandCenter?.moderationQueue.accountsMissingReasonCount ?? 0) + (commandCenter?.moderationQueue.businessesMissingReasonCount ?? 0) > 0 ? (
                   <InlineWarning>{(commandCenter?.moderationQueue.accountsMissingReasonCount ?? 0) + (commandCenter?.moderationQueue.businessesMissingReasonCount ?? 0)} suspended record(s) are missing a moderation reason.</InlineWarning>
                 ) : null}
-                {!((commandCenter?.supportQueue.staleCount ?? 0) || (commandCenter?.claimsQueue.stalePendingCount ?? 0) || ((commandCenter?.moderationQueue.accountsMissingReasonCount ?? 0) + (commandCenter?.moderationQueue.businessesMissingReasonCount ?? 0))) ? (
+                {!(
+                  commandCenter?.deployHealth.storageWarning
+                  || (commandCenter?.supportQueue.staleCount ?? 0)
+                  || (commandCenter?.claimsQueue.stalePendingCount ?? 0)
+                  || ((commandCenter?.moderationQueue.accountsMissingReasonCount ?? 0) + (commandCenter?.moderationQueue.businessesMissingReasonCount ?? 0))
+                ) ? (
                   <div className="empty-panel">No urgent warnings are blocking the admin queue right now.</div>
                 ) : null}
               </div>

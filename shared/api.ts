@@ -1408,6 +1408,28 @@ export const adminPlatformSettingsSchema = z.object({
 });
 export type AdminPlatformSettings = z.infer<typeof adminPlatformSettingsSchema>;
 
+export const deployHealthSchema = z.object({
+  provider: z.string(),
+  location: z.string(),
+  cloudDatabaseConfigured: z.boolean(),
+  persistenceMode: z.enum(["sqlite-local", "sqlite-ephemeral", "cloud-configured-unavailable"]),
+  persistenceDurable: z.boolean(),
+  storageWarning: z.string().nullable(),
+  demoSeedingEnabled: z.boolean(),
+  appUrl: z.string().nullable(),
+  trustProxy: z.union([z.boolean(), z.number()]),
+  nodeEnv: z.string(),
+});
+export type DeployHealth = z.infer<typeof deployHealthSchema>;
+
+export const healthResponseSchema = z.object({
+  status: z.enum(["ok", "degraded"]),
+  database: z.enum(["ok", "error"]),
+  serverTime: z.string(),
+  runtime: deployHealthSchema.optional(),
+});
+export type HealthResponse = z.infer<typeof healthResponseSchema>;
+
 export const adminCommandCenterSchema = z.object({
   operationsSummary: z.object({
     kind: z.enum(["support", "claims", "moderation", "subscriptions", "growth", "steady"]),
@@ -1418,6 +1440,7 @@ export const adminCommandCenterSchema = z.object({
     secondaryActionLabel: z.string().nullable().default(null),
     secondaryActionHref: z.string().nullable().default(null),
   }),
+  deployHealth: deployHealthSchema,
   unresolvedSupportCount: z.number().int(),
   pendingClaimsCount: z.number().int(),
   suspendedBusinessesCount: z.number().int(),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRuntimeConfig, validateRuntimeConfig } from "./runtime";
+import { createRuntimeConfig, getPersistenceStatus, validateRuntimeConfig } from "./runtime";
 
 describe("runtime configuration", () => {
   it("defaults production demo seeding to false", () => {
@@ -55,5 +55,29 @@ describe("runtime configuration", () => {
     } else {
       process.env.ADMIN_SIGNUP_SECRET = originalAdminSecret;
     }
+  });
+
+  it("marks /tmp production sqlite storage as ephemeral", () => {
+    const config = createRuntimeConfig({
+      NODE_ENV: "production",
+      QTECH_DATA_DIR: "/tmp/qtech",
+    });
+
+    const persistence = getPersistenceStatus(config);
+
+    expect(persistence.ephemeral).toBe(true);
+    expect(persistence.durable).toBe(false);
+    expect(persistence.mode).toBe("sqlite-ephemeral");
+  });
+
+  it("requires a database auth token for libsql-style managed urls", () => {
+    const config = createRuntimeConfig({
+      NODE_ENV: "production",
+      DATABASE_URL: "libsql://smart-queue-demo.turso.io",
+    });
+
+    const result = validateRuntimeConfig(config);
+
+    expect(result.errors).toContain("DATABASE_AUTH_TOKEN is required for the configured managed database URL.");
   });
 });

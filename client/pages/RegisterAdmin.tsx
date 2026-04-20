@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, LockKeyhole, ShieldAlert } from "lucide-react";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
+import HostedStorageNotice from "@/components/HostedStorageNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -99,6 +100,8 @@ export default function RegisterAdmin() {
                     <ArrowRight className="ml-1 h-4 w-4" />
                   </Link>
                 </div>
+
+                <HostedStorageNotice className="mt-5" />
               </section>
             </div>
           </div>
