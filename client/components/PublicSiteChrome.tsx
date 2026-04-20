@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Compass, Presentation } from "lucide-react";
+import { ArrowRight, Compass, Menu, Presentation, X } from "lucide-react";
 import smartQueueLogo from "@/assets/smart-queue-logo.jpg";
 import { Button } from "@/components/ui/button";
 import { getDemoPresetRoute, useDemoMode } from "@/context/DemoModeContext";
@@ -60,6 +60,16 @@ export default function PublicSiteChrome({
   const { triggerLogoTap } = useEasterEgg();
   const workspacePath = user ? getHomeRouteForRole(user.role) : "/account";
   const workspaceLabel = user ? (user.role === "user" ? user.name : getRoleWorkspaceLabel(user.role)) : "Guest account";
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -104,6 +114,16 @@ export default function PublicSiteChrome({
           </div>
 
           <div className="site-header-actions">
+            {!compactHeader ? (
+              <Button
+                className="w-full sm:w-auto lg:hidden"
+                variant="outline"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+                Menu
+              </Button>
+            ) : null}
             {!controlsHidden ? (
               <Button
                 className="w-full sm:w-auto"
@@ -152,6 +172,68 @@ export default function PublicSiteChrome({
           </div>
         </div>
       </header>
+
+      {!compactHeader ? (
+        <>
+          <div className={`fixed inset-0 z-50 bg-slate-950/45 transition duration-200 lg:hidden ${mobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}>
+            <button
+              aria-label="Close site menu"
+              className="absolute inset-0 cursor-default"
+              onClick={() => setMobileMenuOpen(false)}
+              type="button"
+            />
+          </div>
+          <aside
+            aria-hidden={!mobileMenuOpen}
+            className={`fixed inset-y-0 left-0 z-50 flex w-[min(88vw,22rem)] flex-col overflow-y-auto border-r border-white/70 bg-white/96 px-4 pb-6 pt-4 shadow-2xl backdrop-blur-xl transition-transform duration-200 dark:border-slate-800 dark:bg-slate-950/96 lg:hidden ${
+              mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3 pb-4">
+              <Link className="site-brand" to="/" onClick={() => setMobileMenuOpen(false)}>
+                <span className="site-brand-mark">
+                  <img alt="Smart Queue logo" className="site-brand-mark-image" src={smartQueueLogo} />
+                </span>
+                <span className="min-w-0">
+                  <span className="site-brand-name">Smart Queue</span>
+                  <span className="site-brand-tag">No Line, Just Time</span>
+                </span>
+              </Link>
+              <button
+                aria-label="Close site menu"
+                className="inline-flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                onClick={() => setMobileMenuOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <nav className="mt-4 grid gap-2">
+              {navItems.map((item) => (
+                item.href.startsWith("/") && !item.href.includes("#") ? (
+                  <Link
+                    key={item.label}
+                    className="flex min-h-[3.25rem] items-center rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    to={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={item.label}
+                    className="flex min-h-[3.25rem] items-center rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                )
+              ))}
+            </nav>
+          </aside>
+        </>
+      ) : null}
 
       {children}
 
