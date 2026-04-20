@@ -962,7 +962,7 @@ export default function AdminDashboard() {
       ) : null}
 
       {section === "businesses" ? (
-        <section className="grid gap-8 2xl:grid-cols-[0.9fr_1.1fr]">
+        <section className="grid gap-8 3xl:grid-cols-[0.9fr_1.1fr]">
           <div className="section-shell panel-roomy">
             <h2 className="section-heading text-slate-900 dark:text-slate-100">Create business</h2>
             <div className="dense-form-grid mt-6">
@@ -978,7 +978,7 @@ export default function AdminDashboard() {
               <Input placeholder="Address" value={businessForm.address} onChange={(event) => setBusinessForm((current) => ({ ...current, address: event.target.value }))} />
             </div>
             <textarea className="field-textarea mt-5 min-h-[120px]" placeholder="Description" value={businessForm.description} onChange={(event) => setBusinessForm((current) => ({ ...current, description: event.target.value }))} />
-            <Button className="site-primary-button mt-5" disabled={createBusinessMutation.isPending} onClick={() => createBusinessMutation.mutate(businessForm)}>
+            <Button className="site-primary-button mt-5 w-full sm:w-auto" disabled={createBusinessMutation.isPending} onClick={() => createBusinessMutation.mutate(businessForm)}>
               {createBusinessMutation.isPending ? "Creating..." : "Create business"}
             </Button>
           </div>
@@ -988,7 +988,7 @@ export default function AdminDashboard() {
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input className="pl-9" placeholder="Search business or owner" value={search} onChange={(event) => setSearch(event.target.value)} />
             </div>
-            <div className="mt-5 grid gap-6 2xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="mt-5 grid gap-6 3xl:grid-cols-[320px_minmax(0,1fr)]">
               <div className="min-w-0 space-y-3">
                 {filteredBusinesses.map((business) => (
                   <button
@@ -1039,7 +1039,7 @@ export default function AdminDashboard() {
                   </div>
                   <textarea className="field-textarea mt-4 min-h-[110px]" value={businessDraft.description} onChange={(event) => setBusinessDraft((current) => ({ ...current, description: event.target.value }))} />
                   <textarea className="field-textarea mt-4 min-h-[96px]" placeholder="Moderation reason" value={businessDraft.moderationReason} onChange={(event) => setBusinessDraft((current) => ({ ...current, moderationReason: event.target.value }))} />
-                  <div className="mt-4 grid gap-4 2xl:grid-cols-2">
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
                     <select className="field-select" value={selectedBusiness.ownerId ? String(selectedBusiness.ownerId) : ""} onChange={(event) => assignOwnerMutation.mutate({ businessId: selectedBusiness.id, ownerUserId: event.target.value ? Number(event.target.value) : null })}>
                       <option value="">No owner assigned</option>
                       {owners.map((owner) => (
@@ -1056,7 +1056,7 @@ export default function AdminDashboard() {
                       {selectedBusinessWarnings.map((warning) => <InlineWarning key={warning}>{warning}</InlineWarning>)}
                     </div>
                   ) : null}
-                  <div className="mt-5 grid gap-3 2xl:grid-cols-2">
+                  <div className="mobile-button-row mt-5">
                     <Button className="site-primary-button w-full" disabled={updateBusinessMutation.isPending} onClick={() => updateBusinessMutation.mutate({ id: selectedBusiness.id, payload: businessDraft })}>
                       Save business
                     </Button>
@@ -1111,7 +1111,7 @@ export default function AdminDashboard() {
               <h2 className="section-heading text-slate-900 dark:text-slate-100">Claims and imports</h2>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Review external place claims, import valid businesses, or dismiss duplicates and low-quality requests.</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="mobile-chip-row">
               <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                 {claims.filter((claim) => claim.status === "pending").length} pending
               </span>
@@ -1133,11 +1133,11 @@ export default function AdminDashboard() {
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] ${badgeClass(claim.status)}`}>{claim.status}</span>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  <Button className="site-primary-button" disabled={claim.status !== "pending" || claimImportMutation.isPending} onClick={() => claimImportMutation.mutate(claim.id)}>
+                <div className="mobile-button-row mt-4">
+                  <Button className="site-primary-button w-full sm:w-auto" disabled={claim.status !== "pending" || claimImportMutation.isPending} onClick={() => claimImportMutation.mutate(claim.id)}>
                     Import business
                   </Button>
-                  <Button variant="outline" disabled={claim.status !== "pending" || claimReviewMutation.isPending} onClick={() => claimReviewMutation.mutate({ id: claim.id, status: "dismissed" })}>
+                  <Button className="w-full sm:w-auto" variant="outline" disabled={claim.status !== "pending" || claimReviewMutation.isPending} onClick={() => claimReviewMutation.mutate({ id: claim.id, status: "dismissed" })}>
                     Dismiss claim
                   </Button>
                 </div>
@@ -1156,7 +1156,7 @@ export default function AdminDashboard() {
       ) : null}
 
       {section === "owners" ? (
-        <section className="grid gap-8 2xl:grid-cols-[0.9fr_1.1fr]">
+        <section className="grid gap-8 3xl:grid-cols-[0.9fr_1.1fr]">
           <div className="section-shell panel-roomy">
             <h2 className="section-heading text-slate-900 dark:text-slate-100">Create owner account</h2>
             <div className="dense-form-grid mt-6">
@@ -1171,7 +1171,7 @@ export default function AdminDashboard() {
               </select>
             </div>
             <Button
-              className="site-primary-button mt-5"
+              className="site-primary-button mt-5 w-full sm:w-auto"
               disabled={createOwnerMutation.isPending}
               onClick={() =>
                 createOwnerMutation.mutate({
@@ -1188,7 +1188,7 @@ export default function AdminDashboard() {
 
           <div className="section-shell panel-roomy">
             <h2 className="section-heading text-slate-900 dark:text-slate-100">Owner management</h2>
-            <div className="mt-5 grid gap-6 2xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="mt-5 grid gap-6 3xl:grid-cols-[320px_minmax(0,1fr)]">
               <div className="min-w-0 space-y-3">
                 {owners.map((owner) => (
                   <button
@@ -1212,7 +1212,7 @@ export default function AdminDashboard() {
                 <div className="min-w-0 rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
                   <div className="font-semibold text-slate-900 dark:text-slate-100">{selectedOwner.name}</div>
                   <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{selectedOwner.email}</div>
-                  <div className="mt-4 grid gap-3 2xl:grid-cols-2">
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
                     <div className="rounded-2xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
                       <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Last sign-in</div>
                       <div className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{formatTimestamp(selectedOwner.lastSignInAt)}</div>
@@ -1222,7 +1222,7 @@ export default function AdminDashboard() {
                       <div className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{selectedOwner.businessName ?? "None"}</div>
                     </div>
                   </div>
-                  <div className="mt-4 grid gap-4 2xl:grid-cols-2">
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
                     <select className="field-select" value={selectedOwner.businessId ? String(selectedOwner.businessId) : ""} onChange={(event) => transferOwnerMutation.mutate({ id: selectedOwner.id, businessId: event.target.value ? Number(event.target.value) : null })}>
                       <option value="">No business assigned</option>
                       {businesses.map((business) => (
@@ -1243,9 +1243,9 @@ export default function AdminDashboard() {
                     </Button>
                   </div>
                   {selectedOwner.healthFlags.missingBusinessAssignment ? <div className="mt-4 text-sm text-amber-700 dark:text-amber-300">This owner account is active but not attached to a business yet.</div> : null}
-                  <div className="mt-4 grid gap-3 2xl:grid-cols-2">
-                    <Button className="w-full" variant="outline" onClick={() => forceResetMutation.mutate(selectedOwner.id)}>Generate reset link</Button>
-                    <Button className="w-full" variant="outline" onClick={() => navigate("/admin-panel/accounts")}>Open full account record</Button>
+                  <div className="mobile-button-row mt-4">
+                    <Button className="w-full sm:w-auto" variant="outline" onClick={() => forceResetMutation.mutate(selectedOwner.id)}>Generate reset link</Button>
+                    <Button className="w-full sm:w-auto" variant="outline" onClick={() => navigate("/admin-panel/accounts")}>Open full account record</Button>
                   </div>
                   <Button
                     className="mt-3 w-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/10"
@@ -1275,7 +1275,7 @@ export default function AdminDashboard() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input className="pl-9" placeholder="Search accounts, emails, or businesses" value={search} onChange={(event) => setSearch(event.target.value)} />
           </div>
-          <div className="mt-5 grid gap-6 2xl:grid-cols-[340px_minmax(0,1fr)]">
+          <div className="mt-5 grid gap-6 3xl:grid-cols-[340px_minmax(0,1fr)]">
             <div className="min-w-0 space-y-3">
               {filteredAccounts.map((account) => (
                 <button
@@ -1307,12 +1307,12 @@ export default function AdminDashboard() {
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] ${badgeClass(selectedAccount.accountStatus)}`}>{selectedAccount.accountStatus}</span>
                 </div>
-                <div className="mt-5 grid gap-4 2xl:grid-cols-3">
+                <div className="mt-5 grid gap-4 md:grid-cols-3">
                   <StatCard label="Queues" value={selectedAccount.queueCount} />
                   <StatCard label="Appointments" value={selectedAccount.appointmentCount} />
                   <StatCard label="Support cases" value={selectedAccount.supportConversationCount} />
                 </div>
-                <div className="mt-4 grid gap-3 2xl:grid-cols-2">
+                <div className="mt-4 grid gap-3 lg:grid-cols-2">
                   <div className="rounded-2xl border border-slate-100 bg-white p-4 text-sm dark:border-slate-800 dark:bg-slate-950">
                     <div className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Business</div>
                     <div className="mt-2 font-semibold text-slate-900 dark:text-slate-100">{selectedAccount.businessName ?? "Not assigned"}</div>
@@ -1332,7 +1332,7 @@ export default function AdminDashboard() {
                     {selectedAccountWarnings.map((warning) => <InlineWarning key={warning}>{warning}</InlineWarning>)}
                   </div>
                 ) : null}
-                <div className="mt-5 grid gap-3 2xl:grid-cols-2">
+                <div className="mobile-button-row mt-5">
                   <Button
                     className="w-full"
                     variant="outline"
@@ -1346,7 +1346,7 @@ export default function AdminDashboard() {
                   >
                     {selectedAccount.accountStatus === "active" ? "Suspend account" : "Reactivate account"}
                   </Button>
-                  <Button className="w-full" variant="outline" onClick={() => forceResetMutation.mutate(selectedAccount.id)}>Generate reset link</Button>
+                  <Button className="w-full sm:w-auto" variant="outline" onClick={() => forceResetMutation.mutate(selectedAccount.id)}>Generate reset link</Button>
                 </div>
                 <Button
                   className="mt-3 w-full border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-500/20 dark:text-rose-300 dark:hover:bg-rose-500/10"
@@ -1398,7 +1398,7 @@ export default function AdminDashboard() {
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.15em] ${badgeClass(subscription.status)}`}>{subscription.status}</span>
                 </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                <div className="mt-4 grid gap-3 lg:grid-cols-3">
                   <select className="field-select" value={subscription.plan} onChange={(event) => subscriptionMutation.mutate({ businessId: subscription.businessId, plan: event.target.value as "starter" | "growth" | "premium", interval: subscription.interval, status: subscription.status })}>
                     {["starter", "growth", "premium"].map((plan) => <option key={plan} value={plan}>{plan}</option>)}
                   </select>
@@ -1590,7 +1590,7 @@ export default function AdminDashboard() {
               <input className="mt-4 h-6 w-6 accent-blue-600" checked={settingsForm.claimsRequireManualReview} onChange={(event) => setSettingsForm((current) => ({ ...current, claimsRequireManualReview: event.target.checked }))} type="checkbox" />
             </label>
           </div>
-          <Button className="site-primary-button mt-6" disabled={settingsMutation.isPending} onClick={() => settingsMutation.mutate(settingsForm)}>
+          <Button className="site-primary-button mt-6 w-full sm:w-auto" disabled={settingsMutation.isPending} onClick={() => settingsMutation.mutate(settingsForm)}>
             {settingsMutation.isPending ? "Saving..." : "Save platform settings"}
           </Button>
         </section>

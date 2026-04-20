@@ -863,7 +863,7 @@ export default function OwnerDashboard() {
                 <h2 className="section-heading text-slate-900 dark:text-slate-100">Appointment operations</h2>
                 <p className="subtle-lead mt-2">Bookings are grouped by operational stage so you can review new requests, prepare upcoming visits, and close out completed ones.</p>
               </div>
-              <div className="flex flex-wrap gap-3">
+              <div className="mobile-chip-row">
                 <div className="workspace-chip">{dashboard.appointmentCounts.pending} pending</div>
                 <div className="workspace-chip">{dashboard.appointmentCounts.upcoming} upcoming</div>
               </div>
@@ -876,16 +876,16 @@ export default function OwnerDashboard() {
               {dashboard.pendingAppointments.map((appointment) => {
                 const meta = appointmentStatusMeta(appointment.status);
                 return (
-                  <div key={appointment.id} className="rounded-[1.5rem] border border-slate-100 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-900/80">
+                  <div key={appointment.id} className="rounded-[1.35rem] border border-slate-100 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 sm:rounded-[1.5rem] sm:p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{appointment.userName}</div>
                         <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{appointment.serviceName ?? "General service"} | {formatDateTime(appointment.scheduledFor)}</div>
                         <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{meta.description}</div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "approved" })}>Approve</Button>
-                        <Button size="sm" variant="destructive" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "rejected" })}>Reject</Button>
+                      <div className="mobile-button-row w-full lg:w-auto">
+                        <Button className="w-full sm:w-auto" size="sm" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "approved" })}>Approve</Button>
+                        <Button className="w-full sm:w-auto" size="sm" variant="destructive" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "rejected" })}>Reject</Button>
                       </div>
                     </div>
                   </div>
@@ -901,16 +901,16 @@ export default function OwnerDashboard() {
               {dashboard.upcomingAppointments.map((appointment) => {
                 const meta = appointmentStatusMeta(appointment.status);
                 return (
-                  <div key={appointment.id} className="rounded-[1.5rem] border border-slate-100 bg-white/80 p-5 dark:border-slate-800 dark:bg-slate-900/80">
+                  <div key={appointment.id} className="rounded-[1.35rem] border border-slate-100 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-900/80 sm:rounded-[1.5rem] sm:p-5">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{appointment.userName}</div>
                         <div className="mt-1 text-sm text-slate-600 dark:text-slate-300">{appointment.serviceName ?? "General service"} | {formatDateTime(appointment.scheduledFor)}</div>
                         <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">{meta.description}</div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "completed" })}>Mark completed</Button>
-                        <Button size="sm" variant="outline" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "cancelled" })}>Cancel</Button>
+                      <div className="mobile-button-row w-full lg:w-auto">
+                        <Button className="w-full sm:w-auto" size="sm" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "completed" })}>Mark completed</Button>
+                        <Button className="w-full sm:w-auto" size="sm" variant="outline" disabled={appointmentAction.isPending} onClick={() => appointmentAction.mutate({ id: appointment.id, status: "cancelled" })}>Cancel</Button>
                       </div>
                     </div>
                   </div>
@@ -945,7 +945,7 @@ export default function OwnerDashboard() {
       ) : null}
 
       {section === "services" ? (
-        <section className="grid gap-7 xl:grid-cols-[0.95fr_1.05fr]">
+        <section className="grid gap-7 2xl:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-7">
             <div className="section-shell panel-roomy">
               <h2 className="section-heading text-slate-900 dark:text-slate-100">Add service lane</h2>
@@ -965,7 +965,7 @@ export default function OwnerDashboard() {
                   Service is active
                   <Switch checked={serviceForm.isActive} onCheckedChange={(checked) => setServiceForm((current) => ({ ...current, isActive: checked }))} />
                 </label>
-                <Button className="site-primary-button" disabled={createService.isPending} onClick={() => createService.mutate(serviceForm)}>Create service lane</Button>
+                <Button className="site-primary-button w-full sm:w-auto" disabled={createService.isPending} onClick={() => createService.mutate(serviceForm)}>Create service lane</Button>
               </div>
             </div>
 
@@ -975,7 +975,7 @@ export default function OwnerDashboard() {
               <div className="mt-5 grid gap-4">
                 <Input placeholder="Counter name" value={counterForm.name} onChange={(event) => setCounterForm((current) => ({ ...current, name: event.target.value }))} />
                 <Input placeholder="Assigned staff" value={counterForm.assignedStaffName} onChange={(event) => setCounterForm((current) => ({ ...current, assignedStaffName: event.target.value }))} />
-                <select className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950" value={counterForm.status} onChange={(event) => setCounterForm((current) => ({ ...current, status: event.target.value as OwnerCounterInput["status"] }))}>
+                <select className="field-select" value={counterForm.status} onChange={(event) => setCounterForm((current) => ({ ...current, status: event.target.value as OwnerCounterInput["status"] }))}>
                   <option value="open">Open</option>
                   <option value="busy">Busy</option>
                   <option value="offline">Offline</option>
@@ -986,6 +986,7 @@ export default function OwnerDashboard() {
                     {dashboard.services.map((service) => (
                       <label key={service.id} className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
                         <input
+                          className="h-5 w-5 accent-blue-600"
                           checked={counterForm.activeServiceIds.includes(service.id)}
                           type="checkbox"
                           onChange={(event) =>
@@ -1002,7 +1003,7 @@ export default function OwnerDashboard() {
                     ))}
                   </div>
                 </div>
-                <Button className="bg-amber-500 text-white hover:bg-amber-600" disabled={createCounter.isPending} onClick={() => createCounter.mutate(counterForm)}>Create counter</Button>
+                <Button className="w-full bg-amber-500 text-white hover:bg-amber-600 sm:w-auto" disabled={createCounter.isPending} onClick={() => createCounter.mutate(counterForm)}>Create counter</Button>
               </div>
             </div>
           </div>
@@ -1079,7 +1080,7 @@ export default function OwnerDashboard() {
       ) : null}
 
       {section === "receipts" ? (
-        <section className="grid gap-7 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.95fr)]">
+        <section className="grid gap-7 2xl:grid-cols-[minmax(0,1fr)_minmax(22rem,0.95fr)]">
           <div className="space-y-7">
             <div className="section-shell panel-roomy">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -1371,7 +1372,7 @@ export default function OwnerDashboard() {
       ) : null}
 
       {section === "settings" ? (
-        <section className="grid gap-7 xl:grid-cols-[0.95fr_1.05fr]">
+        <section className="grid gap-7 2xl:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-7">
             <div className="section-shell panel-roomy">
               <div className="flex items-center gap-3">
@@ -1412,11 +1413,12 @@ export default function OwnerDashboard() {
                   <Input className="mt-2" value={businessProfileForm.websiteUrl} onChange={(event) => setBusinessProfileForm((current) => ({ ...current, websiteUrl: event.target.value }))} placeholder="https://company.com" />
                 </div>
               </div>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button className="site-primary-button" disabled={saveBusinessProfile.isPending} onClick={() => saveBusinessProfile.mutate(businessProfileForm)}>
+              <div className="mobile-button-row mt-5">
+                <Button className="site-primary-button w-full sm:w-auto" disabled={saveBusinessProfile.isPending} onClick={() => saveBusinessProfile.mutate(businessProfileForm)}>
                   {saveBusinessProfile.isPending ? "Saving business details..." : "Save business details"}
                 </Button>
                 <Button
+                  className="w-full sm:w-auto"
                   variant="outline"
                   onClick={() =>
                     setBusinessProfileForm({
@@ -1443,26 +1445,26 @@ export default function OwnerDashboard() {
                 {hoursForm.map((hour, index) => (
                   <div key={hour.dayOfWeek} className="rounded-2xl border border-slate-100 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-900/80">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                      <div className="min-w-[140px]">
+                      <div className="min-w-0 lg:min-w-[140px]">
                         <div className="font-semibold text-slate-900 dark:text-slate-100">{dayLabels[hour.dayOfWeek]}</div>
                         <div className="text-sm text-slate-500 dark:text-slate-400">{hour.isClosed ? "Closed for this day" : `${hour.openTime} to ${hour.closeTime}`}</div>
                       </div>
-                      <div className="grid flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                      <div className="grid flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
                         <input
                           type="time"
                           disabled={hour.isClosed}
                           value={hour.openTime}
-                          className="flex h-11 w-full rounded-xl border border-input bg-background/95 px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-h-[3.15rem] w-full rounded-xl border border-input bg-background/95 px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           onChange={(event) => setHoursForm((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, openTime: event.target.value } : item)))}
                         />
                         <input
                           type="time"
                           disabled={hour.isClosed}
                           value={hour.closeTime}
-                          className="flex h-11 w-full rounded-xl border border-input bg-background/95 px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-h-[3.15rem] w-full rounded-xl border border-input bg-background/95 px-4 py-2.5 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                           onChange={(event) => setHoursForm((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, closeTime: event.target.value } : item)))}
                         />
-                        <label className="flex w-full min-w-[8.5rem] items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
+                        <label className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200 lg:min-w-[8.5rem]">
                           Closed
                           <Switch checked={hour.isClosed} onCheckedChange={(checked) => setHoursForm((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, isClosed: checked } : item)))} />
                         </label>
@@ -1471,11 +1473,11 @@ export default function OwnerDashboard() {
                   </div>
                 ))}
               </div>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Button className="site-primary-button" disabled={saveHours.isPending} onClick={() => saveHours.mutate({ hours: hoursForm })}>
+              <div className="mobile-button-row mt-5">
+                <Button className="site-primary-button w-full sm:w-auto" disabled={saveHours.isPending} onClick={() => saveHours.mutate({ hours: hoursForm })}>
                   {saveHours.isPending ? "Saving hours..." : "Save posted hours"}
                 </Button>
-                <Button variant="outline" onClick={() => setHoursForm((dashboard.business.hours.length ? [...dashboard.business.hours] : defaultHours).sort((a, b) => a.dayOfWeek - b.dayOfWeek))}>
+                <Button className="w-full sm:w-auto" variant="outline" onClick={() => setHoursForm((dashboard.business.hours.length ? [...dashboard.business.hours] : defaultHours).sort((a, b) => a.dayOfWeek - b.dayOfWeek))}>
                   Reset to current hours
                 </Button>
               </div>
@@ -1492,7 +1494,7 @@ export default function OwnerDashboard() {
               <div className="mt-5 grid gap-4">
                 <Input placeholder="Notice title" value={noticeForm.title} onChange={(event) => setNoticeForm((current) => ({ ...current, title: event.target.value }))} />
                 <Textarea placeholder="Message shown to guests" value={noticeForm.message} onChange={(event) => setNoticeForm((current) => ({ ...current, message: event.target.value }))} />
-                <select className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950" value={noticeForm.severity} onChange={(event) => setNoticeForm((current) => ({ ...current, severity: event.target.value as OwnerNoticeInput["severity"] }))}>
+                <select className="field-select" value={noticeForm.severity} onChange={(event) => setNoticeForm((current) => ({ ...current, severity: event.target.value as OwnerNoticeInput["severity"] }))}>
                   <option value="info">Info</option>
                   <option value="warning">Warning</option>
                   <option value="urgent">Urgent</option>
@@ -1501,7 +1503,7 @@ export default function OwnerDashboard() {
                   Notice is active
                   <Switch checked={noticeForm.isActive} onCheckedChange={(checked) => setNoticeForm((current) => ({ ...current, isActive: checked }))} />
                 </label>
-                <Button onClick={() => createNotice.mutate(noticeForm)}>Publish notice</Button>
+                <Button className="w-full sm:w-auto" onClick={() => createNotice.mutate(noticeForm)}>Publish notice</Button>
               </div>
               <div className="mt-5 space-y-3">
                 {dashboard.business.notices.map((notice) => (
