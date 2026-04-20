@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, LockKeyhole } from "lucide-react";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { api } from "@/lib/api";
 
 export default function ResetPassword() {
@@ -62,11 +62,11 @@ export default function ResetPassword() {
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">New password</label>
-                <Input className="min-h-[52px] rounded-[1.1rem]" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+                <PasswordInput className="min-h-[52px] rounded-[1.1rem]" value={password} onChange={(event) => setPassword(event.target.value)} />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Confirm new password</label>
-                <Input className="min-h-[52px] rounded-[1.1rem]" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+                <PasswordInput className="min-h-[52px] rounded-[1.1rem]" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
               </div>
               {error ? <div className="rounded-[1.1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
               {success ? <div className="rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">Password updated. Redirecting you to sign in...</div> : null}

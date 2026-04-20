@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import UserWorkspaceFrame from "@/components/user/UserWorkspaceFrame";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Switch } from "@/components/ui/switch";
 import { useSession } from "@/context/SessionContext";
 import { usePreferences } from "@/context/PreferencesContext";
@@ -162,15 +163,15 @@ export default function UserSettings() {
             <form className="mt-5 space-y-4" onSubmit={handlePasswordSubmit}>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Current password</label>
-                <Input type="password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
+                <PasswordInput value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">New password</label>
-                <Input type="password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} />
+                <PasswordInput value={newPassword} onChange={(event) => setNewPassword(event.target.value)} />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Confirm new password</label>
-                <Input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
+                <PasswordInput value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
               </div>
               {passwordError ? <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{passwordError}</div> : null}
               <Button className="site-primary-button" disabled={passwordSubmitting} type="submit">
@@ -197,7 +198,7 @@ export default function UserSettings() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Password</label>
-                <Input type="password" value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} />
+                <PasswordInput value={deletePassword} onChange={(event) => setDeletePassword(event.target.value)} />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Confirmation word</label>

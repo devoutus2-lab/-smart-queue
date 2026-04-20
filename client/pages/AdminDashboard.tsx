@@ -22,6 +22,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { AdminAssistantAnalytics, AdminBusinessInput, AdminPlatformSettings, BusinessCategory } from "@shared/api";
 import RoleWorkspaceShell from "@/components/RoleWorkspaceShell";
+import { PasswordInput } from "@/components/ui/password-input";
 import { SupportInboxPanel } from "@/components/SupportInboxPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1134,7 +1135,7 @@ export default function AdminDashboard() {
             <div className="dense-form-grid mt-6">
               <Input placeholder="Owner name" value={ownerForm.name} onChange={(event) => setOwnerForm((current) => ({ ...current, name: event.target.value }))} />
               <Input placeholder="Email" value={ownerForm.email} onChange={(event) => setOwnerForm((current) => ({ ...current, email: event.target.value }))} />
-              <Input placeholder="Password" type="password" value={ownerForm.password} onChange={(event) => setOwnerForm((current) => ({ ...current, password: event.target.value }))} />
+              <PasswordInput placeholder="Password" value={ownerForm.password} onChange={(event) => setOwnerForm((current) => ({ ...current, password: event.target.value }))} />
               <select className="field-select" value={ownerForm.businessId} onChange={(event) => setOwnerForm((current) => ({ ...current, businessId: event.target.value }))}>
                 <option value="">No business assigned</option>
                 {businesses.map((business) => (

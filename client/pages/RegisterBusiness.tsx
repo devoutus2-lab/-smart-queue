@@ -6,6 +6,7 @@ import type { BusinessCategory, OwnerSignupBusinessSearchItem, SubscriptionInter
 import PublicSiteChrome from "@/components/PublicSiteChrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useSession } from "@/context/SessionContext";
 import { api } from "@/lib/api";
 import { getHomeRouteForRole } from "@/lib/navigation";
@@ -223,7 +224,7 @@ export default function RegisterBusiness() {
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Password</label>
-                    <Input className="min-h-[52px] rounded-[1.1rem]" value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
+                    <PasswordInput className="min-h-[52px] rounded-[1.1rem]" value={password} onChange={(event) => setPassword(event.target.value)} />
                   </div>
                 </div>
               ) : null}

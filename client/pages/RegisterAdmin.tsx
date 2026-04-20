@@ -4,6 +4,7 @@ import { ArrowRight, LockKeyhole, ShieldAlert } from "lucide-react";
 import PublicSiteChrome from "@/components/PublicSiteChrome";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useSession } from "@/context/SessionContext";
 import { getHomeRouteForRole } from "@/lib/navigation";
 
@@ -79,11 +80,11 @@ export default function RegisterAdmin() {
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Password</label>
-                    <Input className="min-h-[52px] rounded-[1.1rem]" value={password} onChange={(event) => setPassword(event.target.value)} type="password" />
+                    <PasswordInput className="min-h-[52px] rounded-[1.1rem]" value={password} onChange={(event) => setPassword(event.target.value)} />
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Admin secret</label>
-                    <Input className="min-h-[52px] rounded-[1.1rem]" value={adminSecret} onChange={(event) => setAdminSecret(event.target.value)} type="password" />
+                    <PasswordInput className="min-h-[52px] rounded-[1.1rem]" value={adminSecret} onChange={(event) => setAdminSecret(event.target.value)} />
                   </div>
                   {error ? <div className="rounded-[1.1rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div> : null}
                   <Button className="site-primary-button min-h-[54px] w-full" disabled={submitting} type="submit">
