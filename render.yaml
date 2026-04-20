@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: corepack enable && corepack pnpm install --frozen-lockfile && corepack pnpm build
-    startCommand: corepack pnpm start
+    startCommand: node dist/server/node-build.mjs
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
