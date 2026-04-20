@@ -7,7 +7,7 @@
   "type": "module",
   "main": "electron/main.cjs",
   "engines": {
-    "node": ">=22.0.0"
+    "node": "22.x"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
@@ -28,7 +28,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "corepack pnpm run build:client && corepack pnpm run build:server",
+    "build": "npm run build:client && npm run build:server",
     "build:client": "vite build",
     "build:server": "vite build --config vite.config.server.ts",
     "start": "node dist/server/node-build.mjs",
@@ -40,7 +40,7 @@
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "db:sanitize": "node scripts/sanitize-db.mjs",
-    "handoff": "corepack pnpm run build && node scripts/create-handoff.mjs"
+    "handoff": "npm run build && node scripts/create-handoff.mjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

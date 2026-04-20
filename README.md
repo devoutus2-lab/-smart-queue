@@ -167,17 +167,25 @@ The fastest live setup for multi-device access is to host the existing Express +
 1. Push this repo to GitHub.
 2. Create a new Render Blueprint or Web Service.
 3. Use the included `render.yaml`.
-4. Set secrets such as `APP_URL`, `ADMIN_SIGNUP_SECRET`, `GROQ_API_KEY`, and `GOOGLE_PLACES_API_KEY`.
-5. Keep the persistent disk mounted so app data survives restarts.
+4. If you created the service manually before, make sure the Render dashboard build command is `npm install --include=dev && npm run build`.
+5. Keep the start command as `node dist/server/node-build.mjs`.
+6. Do not use `corepack enable` in the Render build command. That step can fail on Render's read-only filesystem before your app build even starts.
+7. If `NODE_ENV=production` is set on the service, keep `--include=dev` in the build command so build tools like `vite` are still installed during deploys.
+8. Set secrets such as `APP_URL` and `ADMIN_SIGNUP_SECRET`. Leave `GROQ_API_KEY`, `GOOGLE_PLACES_API_KEY`, and `DATABASE_URL` unset unless you need those integrations immediately.
+9. Keep the persistent disk mounted so app data survives restarts.
 
 The included Render config uses:
 
 - `HOST=0.0.0.0`
+- `PORT=10000`
 - `TRUST_PROXY=1`
 - `QTECH_DATA_DIR=/var/data/qtech`
 - `QTECH_ENABLE_DEMO_SEEDING=false`
 - `/api/health` as the health check endpoint
 - a single-origin Node deployment shape so auth cookies and SSE stay straightforward
+- Node 22.x as the intended runtime target for deployment
+
+If an older manual Render service keeps reusing stale dashboard settings, recreate it as a Render Blueprint from this repo so `render.yaml` becomes the source of truth.
 
 ### Docker deployment
 
@@ -231,7 +239,7 @@ This package is the developer-maintainable copy and intentionally excludes local
 
 ### `pnpm` is not installed
 
-Use Corepack:
+Use Corepack for local development only. Do not add `corepack enable` to the Render build command.
 
 ```bash
 corepack enable
