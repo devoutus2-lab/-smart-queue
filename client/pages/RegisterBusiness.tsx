@@ -198,7 +198,7 @@ export default function RegisterBusiness() {
               </section>
 
               <section className="section-shell p-6 text-slate-900 dark:text-slate-100 sm:p-8 lg:p-10">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-3xl">Business/company signup</h2>
                     <p className="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">

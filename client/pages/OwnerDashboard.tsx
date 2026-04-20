@@ -772,10 +772,11 @@ export default function OwnerDashboard() {
                       ) : null}
                     </div>
 
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid w-full gap-2 sm:flex sm:w-auto sm:flex-wrap">
                       {availableActions.map((item) => (
                         <Button
                           key={`${entry.id}-${item.action}`}
+                          className="w-full sm:w-auto"
                           size="sm"
                           variant={item.variant ?? "default"}
                           disabled={queueAction.isPending}
@@ -787,7 +788,7 @@ export default function OwnerDashboard() {
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
                     <select
                       className="rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950"
                       value={draft.serviceId}
@@ -833,7 +834,7 @@ export default function OwnerDashboard() {
                       }
                     />
                     <Button
-                      className="site-primary-button"
+                      className="site-primary-button w-full xl:w-auto"
                       disabled={assignAction.isPending}
                       onClick={() => assignAction.mutate({ id: entry.id, draft })}
                     >
