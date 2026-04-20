@@ -137,25 +137,25 @@ export default function UserWorkspaceFrame({
       }}
       aside={
         <>
-          <div className="rounded-[1.5rem] bg-gradient-to-br from-slate-950 via-blue-900 to-blue-700 p-6 text-white">
-            <div className="flex items-center gap-4">
+          <div className="rounded-[1.35rem] bg-gradient-to-br from-slate-950 via-blue-900 to-blue-700 p-5 text-white sm:rounded-[1.5rem] sm:p-6">
+            <div className="flex items-center gap-3 sm:gap-4">
               {profile?.avatarUrl ? (
-                <img alt={profile.name} className="h-16 w-16 rounded-2xl object-cover" src={profile.avatarUrl} />
+                <img alt={profile.name} className="h-14 w-14 rounded-2xl object-cover sm:h-16 sm:w-16" src={profile.avatarUrl} />
               ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/15 text-xl font-bold">{initials}</div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/15 text-lg font-bold sm:h-16 sm:w-16 sm:text-xl">{initials}</div>
               )}
               <div>
-                <div className="text-xs uppercase tracking-[0.25em] text-amber-300">{displayName}</div>
-                <div className="mt-1 text-xl font-bold">{greetingLabel}</div>
+                <div className="text-[11px] uppercase tracking-[0.2em] text-amber-300 sm:text-xs sm:tracking-[0.25em]">{displayName}</div>
+                <div className="mt-1 text-lg font-bold sm:text-xl">{greetingLabel}</div>
                 <div className="text-sm text-blue-100">{profile?.email ?? displayUser?.email}</div>
               </div>
             </div>
-            <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-white/10 p-4 text-sm leading-6 text-blue-100">
+            <div className="mt-5 rounded-[1.2rem] border border-white/10 bg-white/10 p-4 text-sm leading-6 text-blue-100 sm:mt-6 sm:rounded-[1.4rem]">
               {dashboard?.recommendation?.message ?? "Your upcoming visits and saved places stay organized here."}
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3">
+          <div className="mt-5 grid grid-cols-2 gap-3 lg:mt-6 lg:grid-cols-1">
             <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="text-xs uppercase tracking-[0.2em] text-slate-500">Live queues</div>
               <div className="mt-1 font-semibold text-slate-900 dark:text-slate-100">{dashboard?.activeEntries.length ?? 0}</div>

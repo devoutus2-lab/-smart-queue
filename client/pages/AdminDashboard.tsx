@@ -1569,12 +1569,12 @@ export default function AdminDashboard() {
             <label className="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="font-semibold text-slate-900 dark:text-slate-100">Assistant support escalation</div>
               <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Send technical issues straight to support instead of letting the assistant guess.</div>
-              <input className="mt-4 h-5 w-5" checked={settingsForm.assistantSupportEscalationEnabled} onChange={(event) => setSettingsForm((current) => ({ ...current, assistantSupportEscalationEnabled: event.target.checked }))} type="checkbox" />
+              <input className="mt-4 h-6 w-6 accent-blue-600" checked={settingsForm.assistantSupportEscalationEnabled} onChange={(event) => setSettingsForm((current) => ({ ...current, assistantSupportEscalationEnabled: event.target.checked }))} type="checkbox" />
             </label>
             <label className="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="font-semibold text-slate-900 dark:text-slate-100">Support auto-assign</div>
               <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Automatically attach new support threads to an admin when triage is active.</div>
-              <input className="mt-4 h-5 w-5" checked={settingsForm.supportAutoAssignEnabled} onChange={(event) => setSettingsForm((current) => ({ ...current, supportAutoAssignEnabled: event.target.checked }))} type="checkbox" />
+              <input className="mt-4 h-6 w-6 accent-blue-600" checked={settingsForm.supportAutoAssignEnabled} onChange={(event) => setSettingsForm((current) => ({ ...current, supportAutoAssignEnabled: event.target.checked }))} type="checkbox" />
             </label>
             <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="font-semibold text-slate-900 dark:text-slate-100">Default queue pause limit</div>
@@ -1587,7 +1587,7 @@ export default function AdminDashboard() {
             <label className="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900 md:col-span-2">
               <div className="font-semibold text-slate-900 dark:text-slate-100">Claims require manual review</div>
               <div className="mt-2 text-sm text-slate-500 dark:text-slate-400">Keep new directory claim requests in the admin approval queue.</div>
-              <input className="mt-4 h-5 w-5" checked={settingsForm.claimsRequireManualReview} onChange={(event) => setSettingsForm((current) => ({ ...current, claimsRequireManualReview: event.target.checked }))} type="checkbox" />
+              <input className="mt-4 h-6 w-6 accent-blue-600" checked={settingsForm.claimsRequireManualReview} onChange={(event) => setSettingsForm((current) => ({ ...current, claimsRequireManualReview: event.target.checked }))} type="checkbox" />
             </label>
           </div>
           <Button className="site-primary-button mt-6" disabled={settingsMutation.isPending} onClick={() => settingsMutation.mutate(settingsForm)}>

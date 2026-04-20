@@ -67,13 +67,13 @@ export default function RoleWorkspaceShell({
   }, [mobileMenuOpen]);
 
   const navContent = (
-    <nav className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+    <nav className="mt-5 grid gap-2 sm:grid-cols-2 lg:mt-6 lg:grid-cols-1">
       {navItems.map(({ label, to, icon: Icon, badgeCount }) => {
         const isActive = activePath === to;
         return (
           <Link
             key={to}
-            className={`flex min-h-[3.25rem] items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+            className={`flex min-h-[3.15rem] items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition sm:min-h-[3.25rem] ${
               isActive
                 ? "bg-blue-600 text-white shadow-sm"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -113,7 +113,7 @@ export default function RoleWorkspaceShell({
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 sm:text-2xl">{title}</h1>
             {subtitle ? <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{subtitle}</p> : null}
           </div>
-          <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end sm:gap-3">
             <Button
               className="w-full sm:w-auto lg:hidden"
               variant="outline"
@@ -199,7 +199,7 @@ export default function RoleWorkspaceShell({
           </aside>
         ) : null}
 
-        <section className={`min-w-0 space-y-8 xl:space-y-10 ${sidebarHidden ? "lg:col-span-full" : ""}`}>
+        <section className={`min-w-0 space-y-6 sm:space-y-8 xl:space-y-10 ${sidebarHidden ? "lg:col-span-full" : ""}`}>
           {sidebarHidden ? (
             <button
               aria-label="Show sidebar"

@@ -33,7 +33,7 @@ export default function UserQueues() {
                 <h2 className="section-heading text-slate-900 dark:text-slate-100">Your active queues</h2>
                 <p className="subtle-lead mt-2">This route is only for queue tracking, so it stays focused on timing, status, and next action.</p>
               </div>
-              <Button asChild className="site-primary-button">
+              <Button asChild className="site-primary-button w-full sm:w-auto">
                 <Link to="/account/search">Find another business</Link>
               </Button>
             </div>
@@ -45,11 +45,11 @@ export default function UserQueues() {
                 .slice()
                 .sort((left, right) => getQueuePriority(left.status) - getQueuePriority(right.status))
                 .map((entry) => (
-                <Link key={entry.id} className="block rounded-[1.6rem] border border-blue-100 bg-blue-50/70 p-6 transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900/70" to={`/queue-preview/${entry.id}`}>
+                <Link key={entry.id} className="block rounded-[1.35rem] border border-blue-100 bg-blue-50/70 p-4 transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900/70 sm:rounded-[1.6rem] sm:p-6" to={`/queue-preview/${entry.id}`}>
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <div className="text-xs font-semibold uppercase tracking-[0.25em] text-blue-600">{entry.queueNumber}</div>
-                      <h3 className="mt-2 text-2xl text-slate-900 dark:text-slate-100">{entry.businessName}</h3>
+                      <h3 className="mt-2 text-xl text-slate-900 dark:text-slate-100 sm:text-2xl">{entry.businessName}</h3>
                       <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                         {entry.serviceName ?? "General service"} | Position {entry.position ?? "pending"} | {entry.estimatedWaitMinutes} min ETA
                       </p>

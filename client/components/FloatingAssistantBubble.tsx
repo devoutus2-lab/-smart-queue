@@ -240,6 +240,7 @@ export function FloatingAssistantBubble() {
   const [prompt, setPrompt] = useState("");
   const [panelMetaOpen, setPanelMetaOpen] = useState(false);
   const [panelSize, setPanelSize] = useState({ width: 432, height: 560 });
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const resizeStateRef = useRef<{ startX: number; startY: number; startWidth: number; startHeight: number } | null>(null);
   const threadViewportRef = useRef<HTMLDivElement | null>(null);
 
@@ -253,6 +254,14 @@ export function FloatingAssistantBubble() {
   useEffect(() => {
     setPrompt("");
   }, [user?.id, user?.role]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 639px)");
+    const sync = () => setIsMobileViewport(media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     function handlePointerMove(event: MouseEvent) {
@@ -311,11 +320,19 @@ export function FloatingAssistantBubble() {
     <>
       {open ? (
         <div
-          className="fixed bottom-24 right-4 z-50 flex flex-col overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white shadow-[0_24px_70px_-28px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:bg-slate-950 sm:right-6"
-          style={{
-            width: `min(${panelSize.width}px, calc(100vw - 1.5rem))`,
-            height: `min(${panelSize.height}px, calc(100vh - 7rem))`,
-          }}
+          className="fixed left-3 right-3 z-50 flex flex-col overflow-hidden rounded-[1.4rem] border border-slate-200/80 bg-white shadow-[0_24px_70px_-28px_rgba(15,23,42,0.45)] dark:border-slate-800 dark:bg-slate-950 sm:left-auto sm:right-6 sm:rounded-[1.5rem]"
+          style={
+            isMobileViewport
+              ? {
+                  bottom: "calc(5rem + env(safe-area-inset-bottom))",
+                  height: "min(72vh, 40rem)",
+                }
+              : {
+                  bottom: "6rem",
+                  width: `min(${panelSize.width}px, calc(100vw - 3rem))`,
+                  height: `min(${panelSize.height}px, calc(100vh - 7rem))`,
+                }
+          }
         >
           <div className="relative flex items-center justify-between border-b border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(246,248,255,0.96))] px-4 py-3 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.98),rgba(15,23,42,0.95))]">
             <div className="flex items-center gap-3">
@@ -364,7 +381,7 @@ export function FloatingAssistantBubble() {
 
           <div
             ref={threadViewportRef}
-            className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[linear-gradient(180deg,rgba(247,249,255,0.92),rgba(255,255,255,0.98))] px-4 py-4 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.96))]"
+            className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[linear-gradient(180deg,rgba(247,249,255,0.92),rgba(255,255,255,0.98))] px-3 py-3 dark:bg-[linear-gradient(180deg,rgba(2,6,23,0.96),rgba(15,23,42,0.96))] sm:px-4 sm:py-4"
           >
             {!thread?.messages.length ? (
               <>
@@ -411,15 +428,15 @@ export function FloatingAssistantBubble() {
                   Action ready for confirmation
                 </div>
                 <div className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-200">{actionProposal.confirmationMessage}</div>
-                <div className="mt-3 flex gap-2">
+                <div className="mobile-button-row mt-3">
                   <Button
-                    className="site-primary-button"
+                    className="site-primary-button w-full sm:w-auto"
                     disabled={executeAssistantAction.isPending}
                     onClick={() => executeAssistantAction.mutate(actionProposal as AssistantActionProposal)}
                   >
                     {executeAssistantAction.isPending ? "Working..." : "Confirm action"}
                   </Button>
-                  <Button variant="outline" onClick={() => askAssistant.reset()}>
+                  <Button className="w-full sm:w-auto" variant="outline" onClick={() => askAssistant.reset()}>
                     Cancel
                   </Button>
                 </div>
@@ -452,7 +469,7 @@ export function FloatingAssistantBubble() {
             ) : null}
 
             {latestThreadMessage?.kind === "support_referral" ? (
-              <Button asChild className="site-primary-button">
+              <Button asChild className="site-primary-button w-full sm:w-auto">
                 <Link to={getSupportRouteForRole(user.role)}>Open support chat</Link>
               </Button>
             ) : null}
@@ -474,11 +491,11 @@ export function FloatingAssistantBubble() {
           </div>
 
           <div className="shrink-0 border-t border-slate-200/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(247,249,255,0.95))] px-4 py-3 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(15,23,42,0.97),rgba(2,6,23,0.98))]">
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div className="mobile-chip-row mb-3">
               {context.prompts.map((item) => (
                 <button
                   key={item}
-                  className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-left text-xs font-semibold text-blue-700 transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                  className="mobile-pill-button min-h-10 border border-blue-100 bg-blue-50 px-3 py-1.5 text-left text-xs font-semibold text-blue-700 transition hover:border-blue-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
                   onClick={() => setPrompt(item)}
                   type="button"
                 >
@@ -511,30 +528,32 @@ export function FloatingAssistantBubble() {
             </div>
           </div>
 
-          <button
-            aria-label="Resize assistant"
-            className="absolute bottom-1 left-1 h-5 w-5 cursor-nwse-resize rounded-sm text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-200"
-            onMouseDown={(event) => {
-              resizeStateRef.current = {
-                startX: event.clientX,
-                startY: event.clientY,
-                startWidth: panelSize.width,
-                startHeight: panelSize.height,
-              };
-              document.body.style.userSelect = "none";
-              document.body.style.cursor = "nwse-resize";
-            }}
-            type="button"
-          >
-            <svg viewBox="0 0 20 20" className="h-full w-full" fill="currentColor" aria-hidden="true">
-              <path d="M6 14h2v2H6zm4-4h2v2h-2zm4-4h2v2h-2zm-4 8h2v2h-2zm4-4h2v2h-2z" />
-            </svg>
-          </button>
+          {!isMobileViewport ? (
+            <button
+              aria-label="Resize assistant"
+              className="absolute bottom-1 left-1 h-5 w-5 cursor-nwse-resize rounded-sm text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-900 dark:hover:text-slate-200"
+              onMouseDown={(event) => {
+                resizeStateRef.current = {
+                  startX: event.clientX,
+                  startY: event.clientY,
+                  startWidth: panelSize.width,
+                  startHeight: panelSize.height,
+                };
+                document.body.style.userSelect = "none";
+                document.body.style.cursor = "nwse-resize";
+              }}
+              type="button"
+            >
+              <svg viewBox="0 0 20 20" className="h-full w-full" fill="currentColor" aria-hidden="true">
+                <path d="M6 14h2v2H6zm4-4h2v2h-2zm4-4h2v2h-2zm-4 8h2v2h-2zm4-4h2v2h-2z" />
+              </svg>
+            </button>
+          ) : null}
         </div>
       ) : null}
 
       <button
-        className="fixed bottom-6 right-4 z-50 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-slate-950 shadow-2xl transition hover:scale-[1.03] sm:right-6"
+        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-slate-950 shadow-2xl transition hover:scale-[1.03] sm:bottom-6 sm:right-6"
         onClick={(event) => {
           const opened = triggerLogoTap("assistant-bubble", event.detail);
           if (opened) {
