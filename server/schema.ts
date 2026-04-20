@@ -125,6 +125,7 @@ export const queueEntries = sqliteTable("queue_entries", {
   staffName: text("staff_name"),
   status: text("status").notNull(),
   queueNumber: text("queue_number").notNull(),
+  queueOrderKey: text("queue_order_key").notNull().default(""),
   joinedAt: text("joined_at").notNull(),
   calledAt: text("called_at"),
   completedAt: text("completed_at"),

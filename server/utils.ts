@@ -821,6 +821,10 @@ function getQueueSortWeight(status: QueueStatus) {
   }
 }
 
+function getQueueOrderingValue(entry: typeof queueEntries.$inferSelect) {
+  return entry.queueOrderKey || `${entry.joinedAt}#${String(entry.id).padStart(10, "0")}`;
+}
+
 export function getQueueActionAvailability(
   entry: typeof queueEntries.$inferSelect,
   pauseLimitMinutes: number,
@@ -898,7 +902,7 @@ export function revalidateQueueForBusiness(businessId: number) {
       .sort((left, right) => {
         const statusWeight = getQueueSortWeight(left.status as QueueStatus) - getQueueSortWeight(right.status as QueueStatus);
         if (statusWeight !== 0) return statusWeight;
-        return left.joinedAt.localeCompare(right.joinedAt);
+        return getQueueOrderingValue(left).localeCompare(getQueueOrderingValue(right));
       })
       .forEach((entry, index) => {
         const queueIndex =
@@ -1067,7 +1071,7 @@ export function getQueueEntriesForUser(userId: number): QueueEntry[] {
       .sort((left, right) => {
         const statusWeight = getQueueSortWeight(left.status as QueueStatus) - getQueueSortWeight(right.status as QueueStatus);
         if (statusWeight !== 0) return statusWeight;
-        return left.joinedAt.localeCompare(right.joinedAt);
+        return getQueueOrderingValue(left).localeCompare(getQueueOrderingValue(right));
       });
     const position =
       refreshedEntry.status === "paused"
@@ -1638,7 +1642,7 @@ export function getOwnerDashboardData(businessId: number) {
     .sort(({ entry: left }, { entry: right }) => {
       const statusWeight = getQueueSortWeight(left.status as QueueStatus) - getQueueSortWeight(right.status as QueueStatus);
       if (statusWeight !== 0) return statusWeight;
-      return left.joinedAt.localeCompare(right.joinedAt);
+      return getQueueOrderingValue(left).localeCompare(getQueueOrderingValue(right));
     })
     .map(({ entry, userName, businessName, pauseLimitMinutes, maxSkips, maxReschedules, serviceName, counterName }, index) => {
       const queueMeta = getQueueStatusCopy(entry, pauseLimitMinutes);

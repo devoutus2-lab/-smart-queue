@@ -50,6 +50,8 @@ const sqlite = new Database(dbFile);
 sqlite.pragma("journal_mode = WAL");
 sqlite.pragma("foreign_keys = ON");
 
+const ACTIVE_QUEUE_STATUSES_SQL = "('waiting','called','paused','in_service','delayed')";
+
 export const db = drizzle(sqlite);
 export const databaseProvider = "sqlite" as const;
 export const databaseLocation = dbFile;
@@ -166,6 +168,28 @@ function ensureClaimReviewColumns() {
 function ensureAssistantColumns() {
   ensureColumn("assistant_messages", "resolution_state", "resolution_state TEXT");
   ensureColumn("assistant_messages", "can_rate", "can_rate INTEGER NOT NULL DEFAULT 0");
+}
+
+function ensureQueueEntryColumns() {
+  ensureColumn("queue_entries", "service_id", "service_id INTEGER REFERENCES business_services(id)");
+  ensureColumn("queue_entries", "counter_id", "counter_id INTEGER REFERENCES service_counters(id)");
+  ensureColumn("queue_entries", "staff_name", "staff_name TEXT");
+  ensureColumn("queue_entries", "queue_order_key", "queue_order_key TEXT NOT NULL DEFAULT ''");
+  sqlite.prepare(`
+    UPDATE queue_entries
+    SET queue_order_key = joined_at || '#' || printf('%010d', id)
+    WHERE queue_order_key IS NULL OR queue_order_key = ''
+  `).run();
+  sqlite.exec(`
+    CREATE INDEX IF NOT EXISTS queue_entries_business_service_order_idx
+      ON queue_entries (business_id, service_id, queue_order_key);
+    CREATE UNIQUE INDEX IF NOT EXISTS queue_entries_active_queue_number_idx
+      ON queue_entries (business_id, service_id, queue_number)
+      WHERE service_id IS NOT NULL AND status IN ${ACTIVE_QUEUE_STATUSES_SQL};
+    CREATE UNIQUE INDEX IF NOT EXISTS queue_entries_active_user_service_idx
+      ON queue_entries (business_id, user_id, service_id)
+      WHERE service_id IS NOT NULL AND status IN ${ACTIVE_QUEUE_STATUSES_SQL};
+  `);
 }
 
 function createTables() {
@@ -290,8 +314,12 @@ function createTables() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       business_id INTEGER NOT NULL,
       user_id INTEGER NOT NULL,
+      service_id INTEGER,
+      counter_id INTEGER,
+      staff_name TEXT,
       status TEXT NOT NULL,
       queue_number TEXT NOT NULL,
+      queue_order_key TEXT NOT NULL DEFAULT '',
       joined_at TEXT NOT NULL,
       called_at TEXT,
       completed_at TEXT,
@@ -304,7 +332,9 @@ function createTables() {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
       FOREIGN KEY (business_id) REFERENCES businesses(id),
-      FOREIGN KEY (user_id) REFERENCES users(id)
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (service_id) REFERENCES business_services(id),
+      FOREIGN KEY (counter_id) REFERENCES service_counters(id)
     );
     CREATE TABLE IF NOT EXISTS queue_events (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -572,9 +602,7 @@ function createTables() {
     );
   `);
 
-  ensureColumn("queue_entries", "service_id", "service_id INTEGER REFERENCES business_services(id)");
-  ensureColumn("queue_entries", "counter_id", "counter_id INTEGER REFERENCES service_counters(id)");
-  ensureColumn("queue_entries", "staff_name", "staff_name TEXT");
+  ensureQueueEntryColumns();
   ensureColumn("appointments", "service_id", "service_id INTEGER REFERENCES business_services(id)");
   ensureAssistantColumns();
   ensureSupportConversationColumns();
@@ -1267,6 +1295,7 @@ export function initializeDatabase() {
   ensureBusinessMetadataColumns();
   ensureConversationColumns();
   ensureNotificationColumns();
+  ensureQueueEntryColumns();
   ensureSupportConversationColumns();
   ensureClaimReviewColumns();
   if (!enableDemoSeeding) {

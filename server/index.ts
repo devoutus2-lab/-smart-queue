@@ -80,6 +80,7 @@ import {
   db,
   getDatabaseHealthSnapshot,
   initializeDatabase,
+  sqlite,
   verifyDatabaseConnection,
 } from "./db";
 import { insertAndReturnId, insertAndReturnRow } from "./db-write";
@@ -178,6 +179,7 @@ const CORS_ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS ?? "")
   .map((value) => value.trim())
   .filter(Boolean);
 const APP_ORIGIN = APP_URL ? new URL(APP_URL).origin : "";
+const ACTIVE_QUEUE_STATUSES_SQL = "('waiting','called','paused','in_service','delayed')";
 
 declare global {
   namespace Express {
@@ -276,6 +278,87 @@ function createSession(userId: number) {
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
   db.insert(sessions).values({ id, userId, createdAt, expiresAt }).run();
   return id;
+}
+
+function createQueueOrderKey(timestamp = new Date().toISOString()) {
+  return `${timestamp}#${crypto.randomUUID()}`;
+}
+
+function allocateActiveQueueEntry(input: {
+  businessId: number;
+  userId: number;
+  serviceId: number;
+  serviceName: string;
+  averageServiceMinutes: number;
+  maxActiveQueue?: number | null;
+  joinedAt?: string;
+  enforceCapacity?: boolean;
+}) {
+  return sqlite.transaction(() => {
+    const duplicate = sqlite
+      .prepare(`
+        SELECT id
+        FROM queue_entries
+        WHERE business_id = ?
+          AND user_id = ?
+          AND service_id = ?
+          AND status IN ${ACTIVE_QUEUE_STATUSES_SQL}
+        LIMIT 1
+      `)
+      .get(input.businessId, input.userId, input.serviceId) as { id: number } | undefined;
+
+    if (duplicate) {
+      throw new Error("You already have an active queue entry for this service.");
+    }
+
+    const activeCount =
+      (sqlite
+        .prepare(`
+          SELECT COUNT(*) as count
+          FROM queue_entries
+          WHERE business_id = ?
+            AND service_id = ?
+            AND status IN ${ACTIVE_QUEUE_STATUSES_SQL}
+        `)
+        .get(input.businessId, input.serviceId) as { count: number } | undefined)?.count ?? 0;
+
+    if (input.enforceCapacity !== false && input.maxActiveQueue != null && activeCount >= input.maxActiveQueue) {
+      throw new Error(`The ${input.serviceName} lane is already at capacity right now. Please try again later or pick another service.`);
+    }
+
+    const maxNumber =
+      (sqlite
+        .prepare(`
+          SELECT COALESCE(MAX(CAST(SUBSTR(queue_number, 2) AS INTEGER)), 0) as maxNumber
+          FROM queue_entries
+          WHERE business_id = ?
+            AND service_id = ?
+            AND status IN ${ACTIVE_QUEUE_STATUSES_SQL}
+        `)
+        .get(input.businessId, input.serviceId) as { maxNumber: number } | undefined)?.maxNumber ?? 0;
+
+    const joinedAt = input.joinedAt ?? new Date().toISOString();
+    const queueOrderKey = createQueueOrderKey(joinedAt);
+    const entryId = insertAndReturnId(db, queueEntries, {
+      businessId: input.businessId,
+      userId: input.userId,
+      serviceId: input.serviceId,
+      counterId: null,
+      staffName: null,
+      status: "waiting",
+      queueNumber: `Q${String(maxNumber + 1).padStart(3, "0")}`,
+      queueOrderKey,
+      joinedAt,
+      estimatedWaitMinutes: activeCount * input.averageServiceMinutes,
+      createdAt: joinedAt,
+      updatedAt: joinedAt,
+    });
+
+    return {
+      entryId,
+      activeCount,
+    };
+  })();
 }
 
 function hashResetToken(token: string) {
@@ -2423,34 +2506,15 @@ async function performJoinQueue(userId: number, businessId: number, serviceId: n
   if (!service) throw new Error("That service is not available for live queueing.");
   if (!businessDetail.queueSettings.isQueueOpen) throw new Error("This business is not accepting live joins right now.");
   if (service.isAtCapacity) throw new Error(`The ${service.name} lane is already at capacity right now. Please try again later or pick another service.`);
-  const existing = db
-    .select()
-    .from(queueEntries)
-    .where(
-      and(
-        eq(queueEntries.businessId, businessId),
-        eq(queueEntries.userId, userId),
-        eq(queueEntries.serviceId, serviceId),
-        inArray(queueEntries.status, ["waiting", "called", "paused", "in_service", "delayed"]),
-      ),
-    )
-    .get();
-  if (existing) throw new Error("You already have an active queue entry for this service.");
-  const activeCount = service.currentActiveQueue;
-  const timestamp = new Date().toISOString();
-  const entryId = insertAndReturnId(db, queueEntries, {
-      businessId,
-      userId,
-      serviceId,
-      counterId: null,
-      staffName: null,
-      status: "waiting",
-      queueNumber: `Q${String(activeCount + 1).padStart(3, "0")}`,
-      joinedAt: timestamp,
-      estimatedWaitMinutes: activeCount * service.averageServiceMinutes,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    });
+  const { entryId, activeCount } = allocateActiveQueueEntry({
+    businessId,
+    userId,
+    serviceId,
+    serviceName: service.name,
+    averageServiceMinutes: service.averageServiceMinutes,
+    maxActiveQueue: service.maxActiveQueue,
+  });
+  const timestamp = db.select({ joinedAt: queueEntries.joinedAt }).from(queueEntries).where(eq(queueEntries.id, entryId)).get()?.joinedAt ?? new Date().toISOString();
   addQueueEvent(entryId, "joined", `Joined ${service.name}.`, timestamp);
   const conversationId = touchConversation(businessId, userId, {
     visitType: "queue",
@@ -2475,7 +2539,7 @@ async function performJoinQueue(userId: number, businessId: number, serviceId: n
     message: `${businessDetail.name} added a guest to ${service.name}.`,
     queueOrderChanged: true,
     needsAssignmentAttention: true,
-    affectsJoinAvailability: service.currentActiveQueue + 1 >= service.maxActiveQueue,
+    affectsJoinAvailability: activeCount + 1 >= service.maxActiveQueue,
   });
   return { entryId, entries: getQueueEntriesForUser(userId), businessName: businessDetail.name, serviceName: service.name };
 }
@@ -2639,7 +2703,7 @@ function executeUserQueueAction(userId: number, entryId: number, action: "pause"
         .update(queueEntries)
         .set({
           skipsUsed: current.skipsUsed + 1,
-          joinedAt: now,
+          queueOrderKey: createQueueOrderKey(now),
           status: "waiting",
           pauseStartedAt: null,
           updatedAt: now,
@@ -2659,7 +2723,7 @@ function executeUserQueueAction(userId: number, entryId: number, action: "pause"
         .update(queueEntries)
         .set({
           reschedulesUsed: current.reschedulesUsed + 1,
-          joinedAt: now,
+          queueOrderKey: createQueueOrderKey(now),
           status: "waiting",
           pauseStartedAt: null,
           updatedAt: now,
@@ -2975,20 +3039,20 @@ function processScheduledWork() {
     const exists = db.select().from(queueEntries).where(and(eq(queueEntries.businessId, appointment.businessId), eq(queueEntries.userId, appointment.userId), eq(queueEntries.serviceId, appointment.serviceId), inArray(queueEntries.status, ["waiting", "called", "paused", "in_service", "delayed"]))).get();
     if (exists) continue;
     const serviceMinutes = db.select().from(businessServices).where(eq(businessServices.id, appointment.serviceId!)).get()?.averageServiceMinutes ?? business.averageServiceMinutes;
-    const activeCount = db.select({ count: sql<number>`count(*)` }).from(queueEntries).where(and(eq(queueEntries.businessId, appointment.businessId), eq(queueEntries.serviceId, appointment.serviceId), inArray(queueEntries.status, ["waiting", "called", "paused", "in_service", "delayed"]))).get()?.count ?? 0;
-    const queueId = insertAndReturnId(db, queueEntries, {
-      businessId: appointment.businessId,
-      userId: appointment.userId,
-      serviceId: appointment.serviceId,
-      counterId: null,
-      staffName: null,
-      status: "waiting",
-      queueNumber: `Q${String(activeCount + 1).padStart(3, "0")}`,
-      joinedAt: now.toISOString(),
-      estimatedWaitMinutes: activeCount * serviceMinutes,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    });
+    let queueId: number;
+    try {
+      queueId = allocateActiveQueueEntry({
+        businessId: appointment.businessId,
+        userId: appointment.userId,
+        serviceId: appointment.serviceId!,
+        serviceName: "appointment conversion",
+        averageServiceMinutes: serviceMinutes,
+        enforceCapacity: false,
+        joinedAt: now.toISOString(),
+      }).entryId;
+    } catch {
+      continue;
+    }
     addQueueEvent(queueId, "converted", "Appointment converted to live queue.", now.toISOString());
     db.update(appointments).set({ status: "converted", updatedAt: now.toISOString() }).where(eq(appointments.id, appointment.id)).run();
     touchConversation(appointment.businessId, appointment.userId, {
