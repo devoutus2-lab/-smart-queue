@@ -12,7 +12,7 @@ async function fetchHealth(): Promise<HealthResponse> {
     throw new Error("Health check failed");
   }
 
-  return (await response.json()) as HealthPayload;
+  return (await response.json()) as HealthResponse;
 }
 
 export default function AppHealthMonitor() {

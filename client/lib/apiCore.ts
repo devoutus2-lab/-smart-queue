@@ -143,8 +143,19 @@ export const networkApi = {
   updateOwnerSubscription: (input: BusinessSubscriptionUpdate) => request("/api/owner/subscription", { method: "PATCH", body: JSON.stringify(input) }),
   getOwnerQueue: () => request("/api/owner/queue"),
   updateOwnerQueueOpenState: (open: boolean) => request("/api/owner/queue/open-state", { method: "PATCH", body: JSON.stringify({ open }) }),
-  ownerQueueAction: (entryId: number, action: "called" | "in_service" | "delayed" | "completed" | "no_show") =>
-    request(`/api/owner/queue/${entryId}/${action}`, { method: "POST" }),
+  ownerQueueAction: (entryId: number, action: "called" | "in_service" | "delayed" | "completed" | "no_show") => {
+    const routeAction =
+      action === "called"
+        ? "call-next"
+        : action === "in_service"
+          ? "in-service"
+          : action === "delayed"
+            ? "delay"
+            : action === "completed"
+              ? "complete"
+              : "no-show";
+    return request(`/api/owner/queue/${entryId}/${routeAction}`, { method: "POST" });
+  },
   assignOwnerQueueEntry: (entryId: number, input: OwnerQueueAssignment) => request(`/api/owner/queue/${entryId}/assign`, { method: "POST", body: JSON.stringify(input) }),
   updateOwnerAppointment: (id: number, input: { status: "approved" | "rejected" | "cancelled" | "completed" }) =>
     request(`/api/owner/appointments/${id}`, { method: "PATCH", body: JSON.stringify(input) }),

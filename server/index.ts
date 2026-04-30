@@ -4285,10 +4285,15 @@ export function createServer() {
   });
 
   app.post("/api/owner/queue/:id/call-next", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "called"));
+  app.post("/api/owner/queue/:id/called", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "called"));
   app.post("/api/owner/queue/:id/in-service", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "in_service"));
+  app.post("/api/owner/queue/:id/in_service", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "in_service"));
   app.post("/api/owner/queue/:id/delay", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "delayed"));
+  app.post("/api/owner/queue/:id/delayed", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "delayed"));
   app.post("/api/owner/queue/:id/complete", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "completed"));
+  app.post("/api/owner/queue/:id/completed", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "completed"));
   app.post("/api/owner/queue/:id/no-show", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "no_show"));
+  app.post("/api/owner/queue/:id/no_show", authRequired("owner"), (req, res) => handleOwnerQueueAction(req, res, "no_show"));
 
   app.post("/api/owner/queue/:id/assign", authRequired("owner"), (req, res) => {
     const entryId = Number(req.params.id);

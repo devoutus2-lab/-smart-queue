@@ -26,6 +26,7 @@ import type {
   Appointment,
   AppointmentStatus,
   BusinessHour,
+  OwnerDashboard as OwnerDashboardData,
   OwnerBusinessProfileInput,
   OwnerCounterInput,
   OwnerNoticeInput,
@@ -100,6 +101,7 @@ const initialReceiptDraft: Omit<OwnerReceiptInput, "visitType" | "visitId"> = {
 };
 
 const dayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const ownerQueueStatusLegend: QueueStatus[] = ["waiting", "called", "in_service", "delayed", "completed", "no_show"];
 
 const defaultHours: BusinessHour[] = dayLabels.map((_, dayOfWeek) => ({
   dayOfWeek,
@@ -144,8 +146,16 @@ function queueStatusMeta(status: QueueStatus) {
       return { label: "Paused by guest", description: "Guest placed the visit on a short hold. This is different from a delayed visit.", chip: "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-200" };
     case "delayed":
       return { label: "Delayed visit", description: "This visit needs business follow-up. It is not simply paused by the guest.", chip: "bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-200" };
+    case "completed":
+      return { label: "Completed", description: "This visit was completed and moved out of the active line.", chip: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-200" };
+    case "no_show":
+      return { label: "No show", description: "The business marked this visit as missed.", chip: "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-200" };
+    case "cancelled":
+      return { label: "Cancelled", description: "This visit was cancelled before service began.", chip: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200" };
+    case "transferred":
+      return { label: "Transferred", description: "This visit was transferred out of the current line.", chip: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/60 dark:text-cyan-200" };
     default:
-      return { label: status.replace("_", " "), description: "Queue status updated.", chip: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" };
+      return { label: String(status).replace("_", " "), description: "Queue status updated.", chip: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200" };
   }
 }
 
@@ -235,6 +245,7 @@ export default function OwnerDashboard() {
   const [serviceForm, setServiceForm] = useState(initialServiceForm);
   const [counterForm, setCounterForm] = useState(initialCounterForm);
   const [noticeForm, setNoticeForm] = useState(initialNoticeForm);
+  const [queueActionNotice, setQueueActionNotice] = useState("");
   const [hoursForm, setHoursForm] = useState<BusinessHour[]>(defaultHours);
   const [feedbackReplies, setFeedbackReplies] = useState<Record<number, string>>({});
   const [queueDrafts, setQueueDrafts] = useState<Record<number, QueueAssignmentDraft>>({});
@@ -320,12 +331,46 @@ export default function OwnerDashboard() {
       queryClient.invalidateQueries({ queryKey: ["businesses"] }),
       queryClient.invalidateQueries({ queryKey: ["business-markers"] }),
     ]);
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: accountQueryKeys.ownerDashboard(scope.ownerBusinessId), exact: true }),
+      queryClient.refetchQueries({ queryKey: accountQueryKeys.ownerReceipts(scope.ownerBusinessId), exact: true }),
+    ]);
   };
 
   const queueToggle = useMutation({ mutationFn: api.setOwnerQueueOpen, onSuccess: refreshOwnerWorkspace });
   const queueAction = useMutation({
     mutationFn: ({ id, action }: { id: number; action: QueueActionName }) => api.ownerQueueAction(id, action),
-    onSuccess: refreshOwnerWorkspace,
+    onSuccess: async (_response, variables) => {
+      const nextStatus: Record<QueueActionName, QueueStatus> = {
+        "call-next": "called",
+        "in-service": "in_service",
+        delay: "delayed",
+        complete: "completed",
+        "no-show": "no_show",
+      };
+      const nextMeta = queueStatusMeta(nextStatus[variables.action]);
+      queryClient.setQueryData<OwnerDashboardData | undefined>(accountQueryKeys.ownerDashboard(scope.ownerBusinessId), (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          queueEntries: current.queueEntries.map((entry) =>
+            entry.id === variables.id
+              ? {
+                  ...entry,
+                  status: nextStatus[variables.action],
+                  statusLabel: nextMeta.label,
+                  statusDescription: nextMeta.description,
+                }
+              : entry,
+          ),
+        };
+      });
+      setQueueActionNotice(`${nextMeta.label} saved.`);
+      await refreshOwnerWorkspace();
+    },
+    onError: (error) => {
+      setQueueActionNotice(error instanceof Error ? error.message : "Queue action failed.");
+    },
   });
   const appointmentAction = useMutation({
     mutationFn: ({ id, status }: { id: number; status: "approved" | "rejected" | "completed" | "cancelled" }) =>
@@ -701,6 +746,21 @@ export default function OwnerDashboard() {
           {!dashboard.queueAttention.canOperateSmoothly ? (
             <div className="mt-6 rounded-[1.4rem] border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">
               Queue flow has open operational risks. Review assignments, delayed visits, and counter readiness before traffic increases.
+            </div>
+          ) : null}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {ownerQueueStatusLegend.map((status) => {
+              const meta = queueStatusMeta(status);
+              return (
+                <span key={status} className={`rounded-full px-3 py-1 text-xs font-semibold ${meta.chip}`}>
+                  {meta.label}
+                </span>
+              );
+            })}
+          </div>
+          {queueActionNotice ? (
+            <div className="mt-6 rounded-[1.4rem] border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-100">
+              {queueActionNotice}
             </div>
           ) : null}
           {queueRealtimeMessage ? (
